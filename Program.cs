@@ -5,17 +5,16 @@ namespace regvalidation
 {
     internal class Program
     {
-        private static readonly List<string> ExistingLogins = new List<string> { "admin", "moderator", "user123", "root" };
+        private static readonly List<string> UnavailableLogins = new List<string> { "admin", "moderator", "user123", "root" };
 
         static void Main(string[] args)
         {
-            // Настройка Serilog (консоль + файл)
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
                 .WriteTo.File("registration_log.txt", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
-            // Пример входных данных
+            // Пример
             string login = "MyLogin_123";
             string password = "Пароль1!";
             string confirmPassword = "Пароль1!";
@@ -36,16 +35,14 @@ namespace regvalidation
 
             try
             {
-                // 1. Проверка на совпадение паролей
                 if (password != confirm)
                     throw new Exception("Пароль и подтверждение пароля не совпадают.");
 
-                // 2. Валидация логина (Телефон, Почта или Строка)
                 ValidateLogin(login);
 
                 // 3. Проверка на существующий логин
-                if (ExistingLogins.Contains(login.ToLower()))
-                    throw new Exception("Данный логин уже занят.");
+                if (UnavailableLogins.Contains(login.ToLower()))
+                    throw new Exception("Данный логин недоступен.");
 
                 // 4. Валидация пароля
                 ValidatePassword(password);
@@ -58,7 +55,6 @@ namespace regvalidation
             }
             catch (Exception ex)
             {
-                // Ошибка
                 Log.Error(ex, "{Timestamp} | Login: {Login} | Pass: {P} | Conf: {C} | Ошибка: {Error}",
                     timestamp, login, maskedPassword, maskedConfirm, ex.Message);
 
@@ -72,7 +68,7 @@ namespace regvalidation
 
             // Формат телефона +x-xxx-xxx-xxxx
             bool isPhone = Regex.IsMatch(login, @"^\+\d-\d{3}-\d{3}-\d{4}$");
-            // Формат почты
+            // Формат почты [текст без пробелов и @]@[текст без пробелов].[текст без пробелов]
             bool isEmail = Regex.IsMatch(login, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
             // Формат обычной строки (мин 5, латиница, цифры, _)
             bool isSimple = Regex.IsMatch(login, @"^[a-zA-Z0-9_]{5,}$");
@@ -92,12 +88,11 @@ namespace regvalidation
             if (!Regex.IsMatch(pass, @"[а-яё]")) throw new Exception("Пароль должен содержать строчную кириллицу.");
             if (!Regex.IsMatch(pass, @"[А-ЯЁ]")) throw new Exception("Пароль должен содержать заглавную кириллицу.");
             if (!Regex.IsMatch(pass, @"\d")) throw new Exception("Пароль должен содержать хотя бы одну цифру.");
-            if (!Regex.IsMatch(pass, @"[^\w\s]|_")) throw new Exception("Пароль должен содержать хотя бы один спецсимвол.");
+            if (!Regex.IsMatch(pass, @"[^\w\s]")) throw new Exception("Пароль должен содержать хотя бы один спецсимвол.");
             if (Regex.IsMatch(pass, @"[a-zA-Z]")) throw new Exception("В пароле запрещена латиница (только кириллица).");
         }
 
-        // Маскирование: заменяет символы на *, сохраняя длину. 
-        // Результат одинаков для одинаковых входов.
+        // Маскирование: заменяет символы на *
         private static string MaskValue(string value)
         {
             if (string.IsNullOrEmpty(value)) return "";
