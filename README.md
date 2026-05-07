@@ -25,10 +25,10 @@
 
 ```csharp
 string login = "MyLogin_123";
-            string password = "Пароль1!";
-            string confirmPassword = "Пароль1!";
+string password = "Пароль1!";
+string confirmPassword = "Пароль1!";
 
-            var (isSuccess, message) = RegisterUser(login, password, confirmPassword);
+var (isSuccess, message) = RegisterUser(login, password, confirmPassword);
 ```
 
 ## Возможные ошибки
