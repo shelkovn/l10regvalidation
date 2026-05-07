@@ -24,12 +24,11 @@
 ## Использование
 
 ```csharp
-var result = RegistrationValidator.Validate(
-    login: "user_123",
-    password: "ПрИв1!",
-    confirm: "ПрИв1!"
-);
-// result = (true, "") или (false, "текст ошибки")
+string login = "MyLogin_123";
+            string password = "Пароль1!";
+            string confirmPassword = "Пароль1!";
+
+            var (isSuccess, message) = RegisterUser(login, password, confirmPassword);
 ```
 
 ## Возможные ошибки
